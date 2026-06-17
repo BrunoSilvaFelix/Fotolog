@@ -1,29 +1,48 @@
+from datetime import datetime
+
 class Photo:
 
     def __init__(self, id, timestamp, path, tags: list = None, rating: int = None):
-        self._id = id
-        self._timestamp = timestamp
+        self._id = int(id)
+        self._timestamp = self._parse_ts(timestamp)
         self._path = path
-        self._tags = tags
+        self._tags = tags if tags else []
         self._rating = rating
 
+    def _parse_ts(self, ts):
+        if isinstance(ts, (int, float)):
+            return int(ts)
+        
+        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+            try:
+                return int(datetime.strptime(ts, fmt).timestamp())
+            except ValueError:
+                continue
+        
+        raise ValueError(f"Formato de data inválido: {ts}") 
+    
+    def _key(self):
+        return (self.self._timestamp, self._id)
+
     def __le__(self, other):
-        result = False
         if isinstance(other, Photo):
-            result = self._timestamp <= other._timestamp
-        return result
+            return self._key() <= other._key()
+        return False
+
+    def __lt__(self, other):
+        if isinstance(other, Photo):
+            return self._key() < other._key()
+        return False
 
     def __gt__(self, other):
-        result = False
         if isinstance(other, Photo):
-            result = self._timestamp > other._timestamp
-        return result
+            return self._key() > other._key()
+        return False
 
     def __eq__(self, other):
-        result = False
         if isinstance(other, Photo):
-            result = self._timestamp == other._timestamp and self._id == other._id
-        return result
+            return self._key() == other._key()
+        return False
 
     def __repr__(self):
         return self.__str__()

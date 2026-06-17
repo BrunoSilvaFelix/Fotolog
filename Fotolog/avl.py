@@ -540,3 +540,116 @@ class AVLTree(BinaryTree):
 
         # Balanceia a árvore
         return self._balance_tree(root)
+
+
+class Photo:
+
+    def __init__(self, id, timestamp, path, tags: list = None, rating: int = None):
+        self._id = id
+        self._timestamp = timestamp
+        self._path = path
+        self._tags = tags
+        self._rating = rating
+
+    def __le__(self, other):
+        result = False
+        if isinstance(other, Photo):
+            result = self._timestamp <= other._timestamp
+        return result
+
+    def __gt__(self, other):
+        result = False
+        if isinstance(other, Photo):
+            result = self._timestamp > other._timestamp
+        return result
+
+    def __eq__(self, other):
+        result = False
+        if isinstance(other, Photo):
+            result = self._timestamp == other._timestamp and self._id == other._id
+        return result
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f'{self._timestamp} {self._path}'
+
+
+# TODO é necessário implementar um gerador de id's para cada foto
+# a restrição é que o id tem que ser único
+class Catalog:
+
+    def __init__(self, photo: Photo):
+        self._index = AVLTree(photo)
+        self.sec_index = dict()
+        self.sec_index[photo._id] = photo
+
+    def add(self, photo: Photo):
+        self._index.insert(photo)
+        self.sec_index[photo._id] = photo
+
+    def remove(self, id: int):
+        p = self.sec_index.get(id)
+        self._index.delete(p)
+        self.sec_index.pop(id)
+
+    def get_by_id(self, id):
+        result = self.sec_index.get(id)
+        if not result:
+            raise ValueError(f"Photo with id {id} not found")
+        return result
+
+    def __get_by_id_in_tree(self, id):
+        """
+        Procura por uma foto pelo seu identificador único e recupera a representação
+        dentro da árvore de indexação
+
+        Args:
+            id: Identificador único
+
+        Returns:
+            Nó que representa a foto na árvode de indexação
+        """
+        p: Photo = self.get_by_id(id)  # aqui eu tenho uma foto
+        return self._index.search(p)[1]  # aqui eu tenho a foto na árvore
+
+    def next_of(self, id):
+        return self._index.successor(self.__get_by_id_in_tree(id))
+
+    def prev_of(self, id):
+        return self._index.predecessor(self.__get_by_id_in_tree(id))
+
+    def nearest(self, ts):
+        ...
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return self._index.in_order().__str__()
+
+
+if __name__ == '__main__':
+    values = [10, 20, 30, 40, 50, 25]
+    binary = BinaryTree()
+    avl = AVLTree()
+    for value in values:
+        binary.insert(value)
+        avl.insert(value)
+
+    print(binary.traversal(True, True, True))
+    print(avl.traversal(True, True, True))
+
+    p1 = Photo(1, 1, "/home/user/Pictures/1.jpg", ["natureza", "natureza2"], 5)
+    p2 = Photo(2, 2, "/home/user/Pictures/2.jpg", ["natureza", "natureza2"], 4)
+    p3 = Photo(3, 3, "/home/user/Pictures/3.jpg", ["natureza", "natureza2"], 3)
+    p4 = Photo(4, 4, "/home/user/Pictures/4.jpg", ["natureza", "natureza2"], 2)
+
+    c = Catalog(p3)
+    c.add(p4)
+    c.add(p1)
+    c.add(p2)
+    print(c)
+    c.remove(2)
+    print(c)
