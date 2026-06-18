@@ -12,10 +12,17 @@ class Photo:
     def _parse_ts(self, ts):
         if isinstance(ts, (int, float)):
             return int(ts)
+
+        formatos = (
+            "%Y-%m-%d %H:%M:%S",  # Para: YYYY-MM-DD HH:MM:SS
+            "%Y-%m-%d %H:%M",     # Para: YYYY-MM-DD HH:MM
+            "%Y-%m-%d"            # Para: YYYY-MM-DD
+        )
         
-        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+        for fmt in formatos:
             try:
-                return int(datetime.strptime(ts, fmt).timestamp())
+                data_objeto = datetime.strptime(ts, fmt)
+                return int(data_objeto.timestamp())
             except ValueError:
                 continue
         
