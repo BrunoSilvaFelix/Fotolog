@@ -1,4 +1,4 @@
-from binary_tree import AVLTree
+from avl import AVLTree
 from photo import Photo
 
 class PhotoAVL(AVLTree):
